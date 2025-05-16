@@ -5,6 +5,7 @@ window.saveResult = function(studentName, level, subject, score, totalQuestions)
       studentName,
       level,
       subject,
+      route: state.selectedRoute,
       score,
       totalQuestions,
       timestamp

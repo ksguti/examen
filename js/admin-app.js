@@ -142,6 +142,7 @@ function renderAdminResults() {
             <p><strong>Estudiante:</strong> ${r.studentName}</p>
             <p><strong>Nivel:</strong> ${r.level.replace('_',' ')}</p>
             <p><strong>Curso:</strong> ${r.subject}</p>
+            <p><strong>Colegio mahanaym:</strong> ${r.route}</p>
             <p><strong>Fecha:</strong> ${new Date(r.timestamp).toLocaleString()}</p>
             <p><strong>salio de la pagina:</strong> ${r.tabSwitchCount || adminTabSwitchCount}</p>
 
@@ -365,6 +366,8 @@ function saveQuestion() {
   }
   saveQuestions(questions);
   renderQuestionList();
+  // → Solo aquí: commitear a GitHub
+  commitQuestionsToGitHub(adminState.questions);
 }
 
 function cancelEdit() {
@@ -377,3 +380,30 @@ function cancelEdit() {
 document.addEventListener('DOMContentLoaded', () => {
   // Espera a que el admin ingrese credenciales
 });
+
+// Llama a este proxy para commitear questions.js en GitHub
+async function commitQuestionsToGitHub(questionsObj) {
+  try {
+    // Serializa + Base64
+    const json          = JSON.stringify(questionsObj, null, 2);
+    const contentBase64 = btoa(unescape(encodeURIComponent(json)));
+
+    // Petición al proxy
+    const res = await fetch('http://localhost:3000/api/update-file', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        path: 'js/questions.js',
+        contentBase64,
+        commitMessage: '📚 Actualiza questions.js desde Admin'
+      })
+    });
+
+    const data = await res.json();
+    if (!data.success) throw new Error(data.error);
+    alert('✅ Preguntas actualizadas en GitHub');
+  } catch (err) {
+    console.error('Commit failed:', err);
+    alert('❌ Error al actualizar en GitHub: ' + err.message);
+  }
+}

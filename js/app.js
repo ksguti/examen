@@ -5,6 +5,7 @@ const app = document.getElementById('app');
 let state = {
   view: 'login',
   user: null,
+  selectedRoute: null,
   selectedLevel: null,
   selectedCourse: null,
 
@@ -39,6 +40,7 @@ state.questions = loadQuestions();
 const render = () => {
   switch (state.view) {
     case 'login':           renderLogin();          break;
+    case 'routeSelection':  renderRouteSelection(); break;
     case 'levelSelection':  renderLevelSelection(); break;
     case 'courseSelection': renderCourseSelection();break;
     case 'courseDetail':    renderCourseDetail();   break;
@@ -59,11 +61,27 @@ const renderLogin = () => {
     <a href="admin-login.html" class="block text-center mt-4 text-green-600">Administrador</a>
   `;
 };
+const renderRouteSelection = () => {
+  app.innerHTML = `
+    <h1 class="text-2xl font-semibold mb-4 text-center">Colegio mahanaym</h1>
+    <div class="flex flex-col gap-4">
+      <button onclick="selectRoute('Matriz')" class="bg-blue-600 text-white py-2 px-4 rounded w-full">Matriz</button>
+      <button onclick="selectRoute('Extencion')" class="bg-blue-600 text-white py-2 px-4 rounded w-full">Extencion</button>
+    </div>
+  `;
+};
+
+function selectRoute(r) {
+  state.selectedRoute = r;
+  state.view = 'levelSelection';
+  render();
+}
+
 const login = () => {
   const u = document.getElementById('username').value.trim();
   if (!u) return alert('Por favor ingresa tu nombre.');
   state.user = u;
-  state.view = 'levelSelection';
+  state.view = 'routeSelection';
   render();
 };
 
@@ -137,8 +155,11 @@ const startExam = () => {
   const first = materias[0];
   state.questionsList = courseObj[first];
   state.view          = 'quiz';
+  
   render();
 };
+
+
 
 // 6) Render quiz
 const renderQuiz = () => {
@@ -219,10 +240,11 @@ const renderResult = () => {
     <div class="max-w-md mx-auto bg-white p-6 rounded shadow">
       <h1 class="text-2xl font-bold mb-1 text-center">Resultado Final</h1>
       <p><strong>Estudiante:</strong> ${state.user}</p>
+      <p><strong>Colegio mahanaym:</strong> ${state.selectedRoute}</p>
       <p><strong>Nivel:</strong> ${state.selectedLevel}</p>
       <p><strong>Curso:</strong> ${state.selectedCourse}</p>
       <p><strong>Fecha:</strong> ${new Date().toLocaleString()}</p>
-      <p><strong>puntos perdidos:</strong> ${state.tabSwitchCount}</p>
+      <p><strong>observación:</strong> ${state.tabSwitchCount}</p>
       <table class="w-full table-auto mb-4">
         <thead>
           <tr>
@@ -257,6 +279,7 @@ window.saveResult = function(studentName, level, subject, score, totalQuestions)
   const results = JSON.parse(localStorage.getItem('examResults')||'[]');
   results.push({
     studentName, level, subject,
+    route: state.selectedRoute,
     score, totalQuestions,
     timestamp: new Date().toISOString(),
     tabSwitchCount: state.tabSwitchCount,
